@@ -24,6 +24,12 @@ app.use(express.static("public"));
 // cokie-parser use ho66e server r cookie gulo ke read & Update kora
 app.use(cookieParser());
 
+//routes import
+import userRouter from "./routes/user.routes.js";
+
+// router decalration
+app.use("/api/v1/users", userRouter);
+
 export default app;
 
 //middleware

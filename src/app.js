@@ -30,7 +30,7 @@ import userRouter from "./routes/user.routes.js";
 // router decalration
 app.use("/api/v1/users", userRouter);
 
-export default app;
+export {app};
 
 //middleware
 //jakhn amer kno url a req send kori seta jakhan res amr amader kache ache tar majhe kichu checking hoi seta ke middleware bole

@@ -411,6 +411,87 @@ const updateCoverImage = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, user, "coverImage updated succesfully"));
 });
 
+const getChannalUserprofile = asyncHandler(async(req,res) => {
+           const {username} = req.params
+
+           if(!username?.trim()){
+               throw new ApiError(400, "usernam is missing")
+           }
+
+           // aggregation pipeline
+          const channel =  await User.aggregate([
+              {
+                //field a $ sign use korte hoi 
+                  $match:{
+                    username: username?.toLowerCase()
+                  }
+              },
+              {
+                 $lookup: {
+                  // usermodel lowercase a hoi & pural a hoi
+                  from : "subscriptions",
+                  localField: "_id",
+                  foreignField: "channel",
+                  as: "subscribers"
+                 }
+              },
+              {
+                $lookup: {
+
+                  from : "subscriptions",
+                  localField: "_id",
+                  foreignField: "subscriber",
+                  as: "subscribedTo"
+                 }
+              },
+
+              {
+                $addFields: {
+                    subscribersCount : {
+                      $size: "$subscribers"
+                    },
+                    channalSubscribedToCount: {
+                        $size: "$subscribedTo"
+                    },
+
+                    isSubscribed: {
+                      $condition: {
+                        if: {$in:[req.user?._id, $subscibers.subsciber]},
+                        then: true,
+                        else: false
+                      }
+                    }
+                }
+              }, 
+              {
+                // $project means ami sudhu selected jinish debo jegulo project korte hbe
+                $project:{
+                  fullName: 1,
+                  username: 1,
+                  subscribersCount: 1,
+                  channalSubscribedToCount: 1,
+                  isSubscribed: 1,
+                  avatar: 1,
+                  coverImage: 1,
+                  email: 1
+                }
+              }
+
+           ])
+
+           
+           if(!channel?.length){
+              throw new ApiError(404, "Channel does not found")  
+           }
+
+           return res 
+           .status(200)
+           .json(
+            new ApiResponse(200, channel[0], "user login fetch successfully" )
+           )
+
+})
+
 export {
   registerUser,
   loginUser,
@@ -421,4 +502,6 @@ export {
   updateAccountDetails,
   updatedAvatar,
   updateCoverImage,
+  getChannalUserprofile
 };
+
